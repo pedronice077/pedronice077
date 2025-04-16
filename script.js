@@ -249,24 +249,27 @@ const getSentimentScore = (text) => {
 };
 
 const fetchSentimentNews = async () => {
-  const apiKey = "0720b22de51c88a3ebb48279e5ec3b19";
-  const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&q=crypto&language=en&category=business`;
+  const sentimentDiv = document.getElementById('sentiment');
+  sentimentDiv.innerHTML = '<p>Loading news sentiment...</p>'; // Show loading message
 
   try {
+    const apiKey = "0720b22de51c88a3ebb48279e5ec3b19";
+    const url = `https://newsdata.io/api/1/news?apikey=${apiKey}&q=crypto&language=en&category=business`;
     const res = await fetch(url);
+
+    if (!res.ok) throw new Error('Failed to fetch news sentiment');
     const data = await res.json();
     const news = data.results;
 
-    const sentimentDiv = document.getElementById("sentiment");
-    sentimentDiv.innerHTML = "";
+    sentimentDiv.innerHTML = '';
 
     news.slice(0, 6).forEach((article) => {
       const fullText = `${article.title} ${article.description}`;
       const score = getSentimentScore(fullText);
-      const color = score > 0 ? "green" : score < 0 ? "red" : "gray";
-      const emoji = score > 0 ? "😄" : score < 0 ? "😞" : "😐";
+      const color = score > 0 ? 'green' : score < 0 ? 'red' : 'gray';
+      const emoji = score > 0 ? '😄' : score < 0 ? '😞' : '😐';
 
-      const el = document.createElement("div");
+      const el = document.createElement('div');
       el.innerHTML = `
         <p><strong style="color:${color}">${emoji}</strong> ${article.title}</p>
         <p><small>${article.source_id} | ${new Date(article.pubDate).toLocaleString()}</small></p>
@@ -274,8 +277,8 @@ const fetchSentimentNews = async () => {
       sentimentDiv.appendChild(el);
     });
   } catch (err) {
-    document.getElementById("sentiment").innerText = "⚠️ Failed to load news sentiment.";
-    console.error("Sentiment error:", err);
+    console.error('Error fetching news sentiment:', err);
+    sentimentDiv.innerHTML = '<p>Error loading news sentiment. Please try again later.</p>';
   }
 };
 
@@ -285,8 +288,7 @@ fetchSentimentNews();
 const portfolio = JSON.parse(localStorage.getItem("portfolio")) || [];
 
 const fetchPortfolioPrices = async () => {
-  const coins = portfolio.map((coin) => coin.name).join(",");
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coins}&vs_currencies=usd`;
+  const url = `${API_BASE_URL}/simple/price?ids=${portfolio.map(coin => coin.name).join(',')}&vs_currencies=usd`;
 
   try {
     const res = await fetch(url);
