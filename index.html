@@ -1,102 +1,692 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crypto Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Crypto Dashboard</title>
+    <style>
+        :root {
+            --primary: #2d3748;
+            --secondary: #4a5568;
+            --accent: #6b46c1;
+            --text: #e2e8f0;
+            --background: #1a202c;
+            --card-bg: #2d3748;
+            --success: #48bb78;
+            --danger: #f56565;
+            --warning: #ed8936;
+            --info: #4299e1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 svg {
+            fill: var(--accent);
+            width: 32px;
+            height: 32px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--accent);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #553c9a;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard {
+                grid-template-columns: 3fr 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .refresh-time {
+            font-size: 0.875rem;
+            color: #a0aec0;
+        }
+
+        .crypto-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .crypto-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: var(--secondary);
+            transition: transform 0.3s;
+        }
+
+        .crypto-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .crypto-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .crypto-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .crypto-name {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .crypto-symbol {
+            font-size: 0.875rem;
+            color: #a0aec0;
+        }
+
+        .crypto-price-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .crypto-price {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .price-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.875rem;
+        }
+
+        .price-up {
+            color: var(--success);
+        }
+
+        .price-down {
+            color: var(--danger);
+        }
+
+        .fear-greed-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .fear-greed-gauge {
+            width: 100%;
+            max-width: 250px;
+            position: relative;
+        }
+
+        .gauge-background {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to right, #f56565, #ed8936, #ecc94b, #48bb78);
+            border-radius: 10px;
+        }
+
+        .gauge-indicator {
+            position: absolute;
+            top: -10px;
+            width: 10px;
+            height: 40px;
+            background-color: white;
+            border-radius: 5px;
+            transform: translateX(-50%);
+            transition: left 0.5s ease-out;
+        }
+
+        .fear-greed-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .fear-greed-text {
+            font-size: 1.25rem;
+            text-align: center;
+        }
+
+        .fear-greed-description {
+            text-align: center;
+            color: #a0aec0;
+            font-size: 0.875rem;
+        }
+
+        .market-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background-color: var(--secondary);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            color: #a0aec0;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            color: var(--danger);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .last-updated {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 0.875rem;
+            color: #a0aec0;
+        }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--secondary);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🚀 Crypto Overview Dashboard</h1>
+    <div class="container">
+        <header>
+            <h1>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-4H8V8h3V6h2v2h1a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1v2h-2v-2zm-1-2h4v-2h-4v2z"/>
+                </svg>
+                Crypto Dashboard
+            </h1>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search cryptocurrency...">
+                <div class="auto-refresh">
+                    <span>Auto-refresh</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-refresh-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </header>
 
-    <div class="control-bar">
-      <button id="themeToggle">🌓 Toggle Theme</button>
+        <div class="dashboard">
+            <div class="main-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Top Cryptocurrencies</div>
+                        <div class="refresh-time">Refreshes every 60s</div>
+                    </div>
+                    <div id="crypto-container" class="crypto-list">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
 
-      <label>
-        <input type="checkbox" id="autoRefreshToggle" checked />
-        Auto Refresh
-      </label>
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <div class="card-title">Market Statistics</div>
+                    </div>
+                    <div id="market-stats" class="market-stats">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-      <select id="currencySelector" title="Select Currency">
-        <option value="usd" selected>USD</option>
-        <option value="eur">EUR</option>
-        <option value="gbp">GBP</option>
-      </select>
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Fear & Greed Index</div>
+                    </div>
+                    <div id="fear-greed-container" class="fear-greed-container">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-      <select id="chartType" title="Select Chart Type">
-        <option value="line" selected>Line Chart</option>
-        <option value="bar">Bar Chart</option>
-        <option value="radar">Radar Chart</option>
-      </select>
-
-      <select id="fgDays" title="Select number of days">
-        <option value="7" selected>7 Days</option>
-        <option value="14">14 Days</option>
-        <option value="30">30 Days</option>
-      </select>
-
-      <input type="text" id="coinSearch" placeholder="Search coins..." />
+        <div class="last-updated" id="last-updated"></div>
     </div>
 
+    <script>
+        // Configuration
+        const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3';
+        const FEAR_GREED_API_URL = 'https://api.alternative.me/fng/';
+        const REFRESH_INTERVAL = 60000; // 60 seconds
 
+        // DOM Elements
+        const cryptoContainer = document.getElementById('crypto-container');
+        const fearGreedContainer = document.getElementById('fear-greed-container');
+        const marketStatsContainer = document.getElementById('market-stats');
+        const lastUpdatedElement = document.getElementById('last-updated');
+        const searchInput = document.getElementById('search-input');
+        const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
 
-    <!-- Portfolio Tracker -->
-<div class="section">
-  <h2>🧮 Portfolio Tracker</h2>
-  <div id="portfolio-container">
-    <form id="portfolio-form">
-      <input type="text" id="coin-name" placeholder="Coin Name (e.g., BTC)" required />
-      <input type="number" id="coin-quantity" placeholder="Quantity" min="0.01" step="0.01" required />
-      <button type="submit">Add Coin</button>
-    </form>
-    <div id="portfolio-list"></div>
-    <div id="portfolio-total">Total Portfolio Value: $0</div>
-  </div>
-</div>
-<!-- Top Gainers and Losers -->
-<div class="section">
-  <h2>📊 Top Gainers & Losers (24h)</h2>
-  <div id="gainers-losers">
-    <div id="gainers"><h3>🚀 Top Gainers</h3></div>
-    <div id="losers"><h3>📉 Top Losers</h3></div>
-  </div>
-</div>
-<!-- Candlestick Chart -->
-<div class="section">
-  <h2>📈 Live BTC/USDT Candlestick Chart</h2>
-  <div id="tv-chart" style="height:500px;"></div>
-</div>
+        // State
+        let cryptoData = [];
+        let fearGreedData = null;
+        let globalData = null;
+        let refreshTimer = null;
 
+        // Initialize
+        init();
 
-    <!-- News Section -->
-    <!-- Market Stats -->
-    <div class="section">
-      <h2>🌍 Market Overview</h2>
-      <div id="market-stats">Loading...</div>
-    </div>
+        function init() {
+            fetchData();
+            setupEventListeners();
+            startAutoRefresh();
+        }
 
-    <!-- Crypto Prices -->
-    <div class="section">
-      <h2>💰 Live Prices</h2>
-      <div id="crypto-prices">Loading...</div>
-    </div>
-    <!-- Sentiment Analysis -->
-<div class="section">
-  <h2>🧠 Crypto Sentiment (Twitter/X)</h2>
-  <div id="sentiment">
-    <p>Loading recent sentiment data...</p>
-  </div>
-</div>
+        function setupEventListeners() {
+            searchInput.addEventListener('input', filterCryptoList);
+            autoRefreshToggle.addEventListener('change', toggleAutoRefresh);
+        }
 
-    <!-- Fear & Greed -->
-    <div class="section">
-      <h2>😨 Fear & Greed Index</h2>
-      <div id="fear-greed">Loading...</div>
-      <canvas id="fgChart" height="100"></canvas>
-    </div>
-  </div>
+        function startAutoRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(fetchData, REFRESH_INTERVAL);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+        }
+
+        function toggleAutoRefresh() {
+            if (autoRefreshToggle.checked) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        }
+
+        async function fetchData() {
+            try {
+                await Promise.all([
+                    fetchCryptoData(),
+                    fetchFearGreedIndex(),
+                    fetchGlobalData()
+                ]);
+
+                updateLastUpdated();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        async function fetchCryptoData() {
+            try {
+                cryptoContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+                const response = await fetch(`${COINGECKO_API_URL}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch cryptocurrency data');
+                }
+
+                cryptoData = await response.json();
+                renderCryptoList(cryptoData);
+            } catch (error) {
+                cryptoContainer.innerHTML = `<div class="error-message">Failed to load cryptocurrency data: ${error.message}</div>`;
+                console.error('Error fetching crypto data:', error);
+            }
+        }
+
+        async function fetchFearGreedIndex() {
+            try {
+                fearGreedContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+                const response = await fetch(FEAR_GREED_API_URL);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch Fear & Greed Index');
+                }
+
+                const data = await response.json();
+                fearGreedData = data.data[0];
+                renderFearGreedIndex(fearGreedData);
+            } catch (error) {
+                fearGreedContainer.innerHTML = `<div class="error-message">Failed to load Fear & Greed Index: ${error.message}</div>`;
+                console.error('Error fetching fear & greed data:', error);
+            }
+        }
+
+        async function fetchGlobalData() {
+            try {
+                marketStatsContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+                const response = await fetch(`${COINGECKO_API_URL}/global`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch global market data');
+                }
+
+                const data = await response.json();
+                globalData = data.data;
+                renderGlobalStats(globalData);
+            } catch (error) {
+                marketStatsContainer.innerHTML = `<div class="error-message">Failed to load market statistics: ${error.message}</div>`;
+                console.error('Error fetching global data:', error);
+            }
+        }
+
+        function renderCryptoList(data) {
+            if (!data || data.length === 0) {
+                cryptoContainer.innerHTML = '<div class="error-message">No cryptocurrency data available</div>';
+                return;
+            }
+
+            const html = data.map(crypto => {
+                const priceChangeClass = crypto.price_change_percentage_24h >= 0 ? 'price-up' : 'price-down';
+                const priceChangeIcon = crypto.price_change_percentage_24h >= 0 ? '↑' : '↓';
+
+                return `
+                    <div class="crypto-item">
+                        <div class="crypto-info">
+                            <img src="${crypto.image}" alt="${crypto.name}" class="crypto-icon">
+                            <div class="crypto-name">
+                                <div>${crypto.name}</div>
+                                <div class="crypto-symbol">${crypto.symbol.toUpperCase()}</div>
+                            </div>
+                        </div>
+                        <div class="crypto-price-info">
+                            <div class="crypto-price">$${formatNumber(crypto.current_price)}</div>
+                            <div class="price-change ${priceChangeClass}">
+                                ${priceChangeIcon} ${Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            cryptoContainer.innerHTML = html;
+        }
+
+        function renderFearGreedIndex(data) {
+            if (!data) {
+                fearGreedContainer.innerHTML = '<div class="error-message">No Fear & Greed data available</div>';
+                return;
+            }
+
+            const value = parseInt(data.value);
+            const classification = data.value_classification;
+
+            // Calculate position for the gauge indicator (0-100)
+            const position = `${value}%`;
+
+            let descriptionText = '';
+            if (value <= 25) {
+                descriptionText = 'Extreme fear indicates potential buying opportunities as the market may be oversold.';
+            } else if (value <= 45) {
+                descriptionText = 'Fear suggests caution but could present good entry points for long-term investors.';
+            } else if (value <= 55) {
+                descriptionText = 'Neutral sentiment indicates a balanced market with no extreme positions.';
+            } else if (value <= 75) {
+                descriptionText = 'Greed suggests the market might be overvalued, consider taking some profits.';
+            } else {
+                descriptionText = 'Extreme greed often precedes market corrections, be cautious with new investments.';
+            }
+
+            const html = `
+                <div class="fear-greed-value">${value}</div>
+                <div class="fear-greed-text">${classification}</div>
+                <div class="fear-greed-gauge">
+                    <div class="gauge-background"></div>
+                    <div class="gauge-indicator" style="left: ${position}"></div>
+                </div>
+                <div class="fear-greed-description">${descriptionText}</div>
+            `;
+
+            fearGreedContainer.innerHTML = html;
+        }
+
+        function renderGlobalStats(data) {
+            if (!data) {
+                marketStatsContainer.innerHTML = '<div class="error-message">No market statistics available</div>';
+                return;
+            }
+
+            const html = `
+                <div class="stat-card">
+                    <div class="stat-title">Market Cap</div>
+                    <div class="stat-value">$${formatLargeNumber(data.total_market_cap.usd)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">24h Volume</div>
+                    <div class="stat-value">$${formatLargeNumber(data.total_volume.usd)}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">BTC Dominance</div>
+                    <div class="stat-value">${data.market_cap_percentage.btc.toFixed(1)}%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Active Coins</div>
+                    <div class="stat-value">${data.active_cryptocurrencies}</div>
+                </div>
+            `;
+
+            marketStatsContainer.innerHTML = html;
+        }
+
+        function filterCryptoList() {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            if (!searchTerm) {
+                renderCryptoList(cryptoData);
+                return;
+            }
+
+            const filteredData = cryptoData.filter(crypto =>
+                crypto.name.toLowerCase().includes(searchTerm) ||
+                crypto.symbol.toLowerCase().includes(searchTerm)
+            );
+
+            renderCryptoList(filteredData);
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            lastUpdatedElement.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000) {
+                return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            } else if (num >= 1) {
+                return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+            } else {
+                return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 });
+            }
+        }
+
+        function formatLargeNumber(num) {
+            if (num >= 1e12) {
+                return (num / 1e12).toFixed(2) + 'T';
+            } else if (num >= 1e9) {
+                return (num / 1e9).toFixed(2) + 'B';
+            } else if (num >= 1e6) {
+                return (num / 1e6).toFixed(2) + 'M';
+            } else if (num >= 1e3) {
+                return (num / 1e3).toFixed(2) + 'K';
+            } else {
+                return num.toFixed(2);
+            }
+        }
+    </script>
 
 <!-- TradingView Advanced Chart Widget -->
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
@@ -120,6 +710,13 @@
     studies: ["MACD@tv-basicstudies", "RSI@tv-basicstudies"],
   });
 </script>
+
+      <div id="tv-chart" style="width: 100%; height: 500px;"></div>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.0"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-colorschemes@1.0.0"></script>
 
 </body>
 </html>
